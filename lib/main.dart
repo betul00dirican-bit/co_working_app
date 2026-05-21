@@ -22,6 +22,11 @@ class CoworkingApp extends StatelessWidget {
 }
 
 List<Map<String, String>> reservations = [];
+Map<String, String> currentCustomer = {
+  'name': '',
+  'phone': '',
+  'email': '',
+};
 
 final List<Map<String, String>> workspaces = [
   {
@@ -152,14 +157,137 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class CustomerPage extends StatelessWidget {
+class CustomerPage extends StatefulWidget {
   const CustomerPage({super.key});
 
   @override
+  State<CustomerPage> createState() => _CustomerPageState();
+}
+
+class _CustomerPageState extends State<CustomerPage> {
+  final nameController = TextEditingController(text: currentCustomer['name']);
+  final phoneController = TextEditingController(text: currentCustomer['phone']);
+  final emailController = TextEditingController(text: currentCustomer['email']);
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
+  void saveProfile() {
+    if (nameController.text.isEmpty ||
+        phoneController.text.isEmpty ||
+        emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lütfen profil bilgilerini doldurun')),
+      );
+      return;
+    }
+
+    setState(() {
+      currentCustomer = {
+        'name': nameController.text,
+        'phone': phoneController.text,
+        'email': emailController.text,
+      };
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Profil bilgileri kaydedildi')),
+    );
+  }
+
+  void goToReservation() {
+    if (currentCustomer['name']!.isEmpty ||
+        currentCustomer['phone']!.isEmpty ||
+        currentCustomer['email']!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Rezervasyon için önce profil bilgilerini kaydedin')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WorkspaceListPage(
+          title: 'Müşteri Paneli - Alan Rezervasyonu',
+          showReserveButton: true,
+        ),
+      ),
+    );
+  }
+
+  void goToHistory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CustomerHistoryPage()),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return WorkspaceListPage(
-      title: 'Müşteri Paneli - Alan Rezervasyonu',
-      showReserveButton: true,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Müşteri Paneli'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Müşteri Profil Bilgileri'),
+              subtitle: Text('Rezervasyon yapmadan önce bilgilerinizi kaydedin.'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              labelText: 'Ad Soyad',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: phoneController,
+            decoration: const InputDecoration(
+              labelText: 'Telefon',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: emailController,
+            decoration: const InputDecoration(
+              labelText: 'E-posta',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: saveProfile,
+            icon: const Icon(Icons.save),
+            label: const Text('Profil Bilgilerini Kaydet'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: goToReservation,
+            icon: const Icon(Icons.business),
+            label: const Text('Çalışma Alanlarını Gör'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: goToHistory,
+            icon: const Icon(Icons.history),
+            label: const Text('Rezervasyon Geçmişim'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -704,8 +832,8 @@ class ReservationPage extends StatefulWidget {
 }
 
 class _ReservationPageState extends State<ReservationPage> {
-  final nameController = TextEditingController();
-  final phoneController = TextEditingController();
+ final nameController = TextEditingController(text: currentCustomer['name']);
+final phoneController = TextEditingController(text: currentCustomer['phone']);
   final dateController = TextEditingController();
 
 String selectedStartTime = '09:00';
@@ -785,6 +913,7 @@ if (hasConflict) {
     reservations.add({
       'customerName': nameController.text,
       'phone': phoneController.text,
+      'email': currentCustomer['email']!,
       'workspaceName': widget.workspace['name']!,
       'workspaceType': widget.workspace['type']!,
       'owner': widget.workspace['owner']!,
@@ -1079,6 +1208,49 @@ class OwnerListPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+class CustomerHistoryPage extends StatelessWidget {
+  const CustomerHistoryPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final customerReservations = reservations.where((reservation) {
+      return reservation['email'] == currentCustomer['email'];
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Rezervasyon Geçmişim'),
+      ),
+      body: customerReservations.isEmpty
+          ? const Center(
+              child: Text('Henüz size ait rezervasyon bulunmuyor'),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: customerReservations.length,
+              itemBuilder: (context, index) {
+                final reservation = customerReservations[index];
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: const Icon(Icons.history),
+                    title: Text(reservation['workspaceName']!),
+                    subtitle: Text(
+                      'Tarih: ${reservation['date']}\n'
+                      'Saat: ${reservation['start']} - ${reservation['end']}\n'
+                      'Durum: ${reservation['status']}\n'
+                      'Ödeme: ${reservation['paymentStatus']}\n'
+                      'Ödeme Yöntemi: ${reservation['paymentMethod']}\n'
+                      'Ücret: ${reservation['totalPrice']}',
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
