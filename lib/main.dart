@@ -546,16 +546,23 @@ class WorkspaceListPage extends StatefulWidget {
 
 class _WorkspaceListPageState extends State<WorkspaceListPage> {
   String selectedFilter = 'Tümü';
+  final searchController = TextEditingController();
 
-  List<Map<String, String>> get filteredWorkspaces {
-    if (selectedFilter == 'Tümü') {
-      return workspaces;
-    }
+ List<Map<String, String>> get filteredWorkspaces {
+  return workspaces.where((workspace) {
+    final matchesFilter = selectedFilter == 'Tümü' ||
+        workspace['type'] == selectedFilter;
 
-    return workspaces.where((workspace) {
-      return workspace['type'] == selectedFilter;
-    }).toList();
-  }
+    final searchText = searchController.text.toLowerCase();
+
+    final matchesSearch =
+        workspace['name']!.toLowerCase().contains(searchText) ||
+        workspace['type']!.toLowerCase().contains(searchText) ||
+        workspace['owner']!.toLowerCase().contains(searchText);
+
+    return matchesFilter && matchesSearch;
+  }).toList();
+}
 
   @override
   Widget build(BuildContext context) {
@@ -577,6 +584,21 @@ class _WorkspaceListPageState extends State<WorkspaceListPage> {
       ),
       body: Column(
         children: [
+          Padding(
+  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+  child: TextField(
+    controller: searchController,
+    decoration: const InputDecoration(
+      labelText: 'Alan Ara',
+      hintText: 'Masa, Ofis, İşletme...',
+      border: OutlineInputBorder(),
+      prefixIcon: Icon(Icons.search),
+    ),
+    onChanged: (value) {
+      setState(() {});
+    },
+  ),
+),
           Padding(
             padding: const EdgeInsets.all(12),
             child: DropdownButtonFormField<String>(
