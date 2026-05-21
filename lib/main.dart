@@ -332,15 +332,15 @@ class OwnerPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            icon: const Icon(Icons.receipt_long),
-            label: const Text('Rezervasyonları Gör'),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ReservationListPage()),
-              );
-            },
-          ),
+  icon: const Icon(Icons.receipt_long),
+  label: const Text('Bana Ait Rezervasyonları Gör'),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const OwnerReservationPage()),
+    );
+  },
+),
         ],
       ),
     );
@@ -1247,6 +1247,67 @@ class CustomerHistoryPage extends StatelessWidget {
                       'Ödeme Yöntemi: ${reservation['paymentMethod']}\n'
                       'Ücret: ${reservation['totalPrice']}',
                     ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+class OwnerReservationPage extends StatelessWidget {
+  const OwnerReservationPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ownerNames = workspaces.map((w) => w['owner']!).toSet().toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Kiralayan Rezervasyonları'),
+      ),
+      body: ownerNames.isEmpty
+          ? const Center(
+              child: Text('Kiralayan bulunmuyor'),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: ownerNames.length,
+              itemBuilder: (context, ownerIndex) {
+                final ownerName = ownerNames[ownerIndex];
+
+                final ownerReservations = reservations.where((reservation) {
+                  return reservation['owner'] == ownerName;
+                }).toList();
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ExpansionTile(
+                    leading: const Icon(Icons.store),
+                    title: Text(ownerName),
+                    subtitle: Text(
+                      'Rezervasyon sayısı: ${ownerReservations.length}',
+                    ),
+                    children: ownerReservations.isEmpty
+                        ? [
+                            const ListTile(
+                              title: Text('Bu işletmeye ait rezervasyon yok'),
+                            )
+                          ]
+                        : ownerReservations.map((reservation) {
+                            return ListTile(
+                              leading: const Icon(Icons.event),
+                              title: Text(reservation['workspaceName']!),
+                              subtitle: Text(
+                                'Müşteri: ${reservation['customerName']}\n'
+                                'Telefon: ${reservation['phone']}\n'
+                                'Tarih: ${reservation['date']}\n'
+                                'Saat: ${reservation['start']} - ${reservation['end']}\n'
+                                'Durum: ${reservation['status']}\n'
+                                'Ödeme: ${reservation['paymentStatus']}\n'
+                                'Ücret: ${reservation['totalPrice']}',
+                              ),
+                            );
+                          }).toList(),
                   ),
                 );
               },
