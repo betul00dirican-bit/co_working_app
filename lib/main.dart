@@ -36,6 +36,7 @@ home: LoginPage(
 }
 
 List<Map<String, String>> reservations = [];
+List<Map<String, String>> favoriteWorkspaces = [];
 Map<String, String> currentCustomer = {
   'name': '',
   'phone': '',
@@ -315,6 +316,19 @@ class _CustomerPageState extends State<CustomerPage> {
             icon: const Icon(Icons.history),
             label: const Text('Rezervasyon Geçmişim'),
           ),
+          const SizedBox(height: 8),
+ElevatedButton.icon(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const FavoriteWorkspacesPage(),
+      ),
+    );
+  },
+  icon: const Icon(Icons.favorite),
+  label: const Text('Favori Alanlarım'),
+),
         ],
       ),
     );
@@ -1450,6 +1464,32 @@ class WorkspaceDetailPage extends StatelessWidget {
           const SizedBox(height: 16),
           ElevatedButton.icon(
   onPressed: () {
+    final alreadyFavorite = favoriteWorkspaces.contains(workspace);
+
+    if (!alreadyFavorite) {
+      favoriteWorkspaces.add(workspace);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Alan favorilere eklendi'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bu alan zaten favorilerde'),
+        ),
+      );
+    }
+  },
+  icon: const Icon(Icons.favorite),
+  label: const Text('Favorilere Ekle'),
+),
+const SizedBox(height: 12),
+
+      
+          ElevatedButton.icon(
+  onPressed: () {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -1650,6 +1690,74 @@ class _EditWorkspacePageState extends State<EditWorkspacePage> {
           ),
         ],
       ),
+    );
+  }
+}
+class FavoriteWorkspacesPage extends StatelessWidget {
+  const FavoriteWorkspacesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Favori Alanlarım'),
+      ),
+      body: favoriteWorkspaces.isEmpty
+          ? const Center(
+              child: Text('Henüz favori alan eklenmedi'),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: favoriteWorkspaces.length,
+              itemBuilder: (context, index) {
+                final workspace = favoriteWorkspaces[index];
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: const Icon(Icons.favorite),
+                    title: Text(workspace['name']!),
+                    subtitle: Text(
+                      '${workspace['type']}\n'
+                      'Kapasite: ${workspace['capacity']}\n'
+                      'Ücret: ${workspace['price']}\n'
+                      'Kiralayan: ${workspace['owner']}\n'
+                      'Durum: ${workspace['status']}',
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        favoriteWorkspaces.remove(workspace);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Favorilerden kaldırıldı'),
+                          ),
+                        );
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const FavoriteWorkspacesPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => WorkspaceDetailPage(
+                            workspace: workspace,
+                            showReserveButton: true,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
     );
   }
 }
