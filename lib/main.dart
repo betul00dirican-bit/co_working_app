@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:fl_chart/fl_chart.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://ocrnpvpfxjddvwdmihli.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jcm5wdnBmeGpkZHZ3ZG1paGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NTY3MzMsImV4cCI6MjA5NTAzMjczM30.SERMtUNq_Gkn0VR-Rk4vHzhknpcZKC74yrPQ_f9hv_0',
+  );
+
   runApp(const CoworkingApp());
 }
 bool isDarkMode = false;
@@ -39,6 +47,7 @@ home: LoginPage(
 
 List<Map<String, String>> reservations = [];
 List<Map<String, String>> favoriteWorkspaces = [];
+final supabase = Supabase.instance.client;
 Map<String, String> currentCustomer = {
   'name': '',
   'phone': '',
@@ -93,27 +102,62 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+
+final passwordController = TextEditingController();
   String selectedRole = 'Müşteri';
 
   void login() {
-    if (selectedRole == 'Admin') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminPage()),
-      );
-    } else if (selectedRole == 'Müşteri') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const CustomerPage()),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const OwnerPage()),
+   
+    Future<void> login() async {
+  try {
+    final response = await supabase.auth.signInWithPassword(
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
+    );
+
+    if (response.user != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Giriş başarılı'),
+        ),
       );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Hata: $e'),
+      ),
+    );
   }
+}
+  }
+Future<void> register() async {
+  try {
+    final response = await supabase.auth.signUp(
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
+    );
 
+    if (response.user != null) {
+      await supabase.from('users').insert({
+        'email': emailController.text.trim(),
+        'full_name': emailController.text.trim(),
+        'role': selectedRole,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kayıt başarılı. Şimdi giriş yapabilirsiniz.'),
+        ),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Kayıt hatası: $e')),
+    );
+  }
+}
   @override
   Widget build(BuildContext context) {
    return Scaffold(
@@ -149,6 +193,25 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  TextField(
+  controller: emailController,
+  decoration: const InputDecoration(
+    labelText: 'E-posta',
+    border: OutlineInputBorder(),
+    prefixIcon: Icon(Icons.email),
+  ),
+),
+const SizedBox(height: 12),
+TextField(
+  controller: passwordController,
+  obscureText: true,
+  decoration: const InputDecoration(
+    labelText: 'Şifre',
+    border: OutlineInputBorder(),
+    prefixIcon: Icon(Icons.lock),
+  ),
+),
+const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: selectedRole,
                     decoration: const InputDecoration(
@@ -177,8 +240,14 @@ class _LoginPageState extends State<LoginPage> {
                       icon: const Icon(Icons.login),
                       label: const Text('Giriş Yap'),
                     ),
+                    
                   ),
-                
+                const SizedBox(height: 8),
+OutlinedButton.icon(
+  onPressed: register,
+  icon: const Icon(Icons.person_add),
+  label: const Text('Kayıt Ol'),
+),
                 ],
               ),
             ),
