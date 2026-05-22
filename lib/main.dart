@@ -1663,11 +1663,15 @@ class WorkspaceDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
-  onPressed: () {
+  onPressed: () async {
     final alreadyFavorite = favoriteWorkspaces.contains(workspace);
 
     if (!alreadyFavorite) {
       favoriteWorkspaces.add(workspace);
+      await supabase.from('favorites').insert({
+  'workspace_id': workspace['id'],
+  'user_email': supabase.auth.currentUser?.email,
+});
       addLog('Çalışma alanı favorilere eklendi');
 
       ScaffoldMessenger.of(context).showSnackBar(
