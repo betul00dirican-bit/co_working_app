@@ -798,6 +798,17 @@ class _WorkspaceListPageState extends State<WorkspaceListPage> {
                   child: ListTile(
                     leading: const Icon(Icons.business, color: Colors.indigo),
                     title: Text(workspace['name']!),
+                    onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => WorkspaceDetailPage(
+        workspace: workspace,
+        showReserveButton: widget.showReserveButton,
+      ),
+    ),
+  );
+},
                     subtitle: Text(
                       '${workspace['type']}\n'
                       'Kapasite: ${workspace['capacity']}\n'
@@ -1369,6 +1380,92 @@ class OwnerReservationPage extends StatelessWidget {
                 );
               },
             ),
+    );
+  }
+}
+class WorkspaceDetailPage extends StatelessWidget {
+  final Map<String, String> workspace;
+  final bool showReserveButton;
+
+  const WorkspaceDetailPage({
+    super.key,
+    required this.workspace,
+    required this.showReserveButton,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(workspace['name']!),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.business, size: 40),
+              title: Text(
+                workspace['name']!,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(workspace['type']!),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Kapasite'),
+              subtitle: Text(workspace['capacity']!),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.attach_money),
+              title: const Text('Saatlik Ücret'),
+              subtitle: Text(workspace['price']!),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.store),
+              title: const Text('Kiralayan / İşletme'),
+              subtitle: Text(workspace['owner']!),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: Icon(
+                workspace['status'] == 'Aktif'
+                    ? Icons.check_circle
+                    : Icons.cancel,
+              ),
+              title: const Text('Durum'),
+              subtitle: Text(workspace['status']!),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (showReserveButton)
+            ElevatedButton.icon(
+              onPressed: workspace['status'] == 'Aktif'
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ReservationPage(workspace: workspace),
+                        ),
+                      );
+                    }
+                  : null,
+              icon: const Icon(Icons.calendar_month),
+              label: const Text('Bu Alanı Rezerve Et'),
+            ),
+        ],
+      ),
     );
   }
 }
