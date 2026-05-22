@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:fl_chart/fl_chart.dart';
+
 void main() {
   runApp(const CoworkingApp());
 }
@@ -632,16 +634,32 @@ class AdminPage extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.receipt_long),
-            label: const Text('Rezervasyonları Gör'),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ReservationListPage()),
-              );
-            },
-          ),
+
+        ElevatedButton.icon(
+  icon: const Icon(Icons.receipt_long),
+  label: const Text('Rezervasyonları Gör'),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ReservationListPage()),
+    );
+  },
+),
+
+const SizedBox(height: 8),
+
+ElevatedButton.icon(
+  icon: const Icon(Icons.bar_chart),
+  label: const Text('İstatistikleri Gör'),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const StatisticsPage(),
+      ),
+    );
+  },
+),
           const SizedBox(height: 8),
           ElevatedButton.icon(
             icon: const Icon(Icons.person_search),
@@ -1777,6 +1795,102 @@ class FavoriteWorkspacesPage extends StatelessWidget {
                 );
               },
             ),
+    );
+  }
+}
+class StatisticsPage extends StatelessWidget {
+  const StatisticsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final activeReservations = reservations
+        .where((r) => r['status'] == 'Aktif')
+        .length;
+
+    final cancelledReservations = reservations
+        .where((r) => r['status'] == 'İptal Edildi')
+        .length;
+
+    final favoriteCount = favoriteWorkspaces.length;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('İstatistikler'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            const Text(
+              'Sistem Kullanım İstatistikleri',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+              height: 300,
+              child: PieChart(
+                PieChartData(
+                  sections: [
+                    PieChartSectionData(
+                      value: reservations.length.toDouble(),
+                      title: 'Toplam',
+                      radius: 90,
+                    ),
+                    PieChartSectionData(
+                      value: activeReservations.toDouble(),
+                      title: 'Aktif',
+                      radius: 90,
+                    ),
+                    PieChartSectionData(
+                      value: cancelledReservations.toDouble(),
+                      title: 'İptal',
+                      radius: 90,
+                    ),
+                    PieChartSectionData(
+                      value: favoriteCount.toDouble(),
+                      title: 'Favori',
+                      radius: 90,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.event),
+                title: const Text('Toplam Rezervasyon'),
+                trailing: Text('${reservations.length}'),
+              ),
+            ),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.check_circle),
+                title: const Text('Aktif Rezervasyon'),
+                trailing: Text('$activeReservations'),
+              ),
+            ),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.cancel),
+                title: const Text('İptal Edilen'),
+                trailing: Text('$cancelledReservations'),
+              ),
+            ),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.favorite),
+                title: const Text('Favori Alanlar'),
+                trailing: Text('$favoriteCount'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
