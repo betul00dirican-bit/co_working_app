@@ -42,7 +42,11 @@ home: supabase.auth.currentUser == null
           });
         },
       )
-    : const CustomerPage(),
+    : currentRole == 'Admin'
+    ? const AdminPage()
+    : currentRole == 'Kiralayan'
+        ? const OwnerPage()
+        : const CustomerPage(),
     );
   }
 }
@@ -76,6 +80,7 @@ Map<String, String> currentCustomer = {
   'phone': '',
   'email': '',
 };
+String currentRole = '';
 
 final List<Map<String, String>> workspaces = [
   {
@@ -142,6 +147,7 @@ final passwordController = TextEditingController();
     );
 
     if (response.user != null) {
+      currentRole = selectedRole;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Giriş başarılı'),
