@@ -34,13 +34,15 @@ class _CoworkingAppState extends State<CoworkingApp> {
   brightness: isDarkMode ? Brightness.dark : Brightness.light,
   useMaterial3: false,
 ),
-home: LoginPage(
-  onThemeChanged: () {
-    setState(() {
-      isDarkMode = !isDarkMode;
-    });
-  },
-),
+home: supabase.auth.currentUser == null
+    ? LoginPage(
+        onThemeChanged: () {
+          setState(() {
+            isDarkMode = !isDarkMode;
+          });
+        },
+      )
+    : const CustomerPage(),
     );
   }
 }
@@ -55,6 +57,19 @@ Future<void> addLog(String action) async {
     'action': action,
     'user_email': userEmail,
   });
+}
+Future<void> logout(BuildContext context) async {
+  await supabase.auth.signOut();
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(
+      builder: (_) => LoginPage(
+  onThemeChanged: () {},
+),
+    ),
+    (route) => false,
+  );
 }
 Map<String, String> currentCustomer = {
   'name': '',
@@ -368,8 +383,16 @@ class _CustomerPageState extends State<CustomerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Müşteri Paneli'),
-      ),
+  title: const Text('Müşteri Paneli'),
+  actions: [
+    IconButton(
+      onPressed: () {
+        logout(context);
+      },
+      icon: const Icon(Icons.logout),
+    ),
+  ],
+),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -447,9 +470,17 @@ class OwnerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kiralayan Paneli'),
-      ),
+     appBar: AppBar(
+  title: const Text('Kiralayan Paneli'),
+  actions: [
+    IconButton(
+      onPressed: () {
+        logout(context);
+      },
+      icon: const Icon(Icons.logout),
+    ),
+  ],
+),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -687,9 +718,17 @@ class AdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Paneli'),
-      ),
+     appBar: AppBar(
+  title: const Text('Admin Paneli'),
+  actions: [
+    IconButton(
+      onPressed: () {
+        logout(context);
+      },
+      icon: const Icon(Icons.logout),
+    ),
+  ],
+),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
