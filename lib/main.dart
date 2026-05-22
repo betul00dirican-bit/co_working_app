@@ -1045,7 +1045,7 @@ Future<void> selectDate() async {
     });
   }
 }
-  void saveReservation() {
+  Future<void> saveReservation() async {
     if (nameController.text.isEmpty ||
     phoneController.text.isEmpty ||
     dateController.text.isEmpty) {
@@ -1119,6 +1119,18 @@ if (hasConflict) {
       'paymentMethod': selectedPaymentMethod,
 'totalPrice': widget.workspace['price']!,
     });
+    await supabase.from('reservations').insert({
+  'customer_name': nameController.text,
+  'customer_phone': phoneController.text,
+  'workspace_id': widget.workspace['id'],
+  'reservation_date': dateController.text,
+  'start_time': selectedStartTime,
+  'end_time': selectedEndTime,
+  'payment_method': selectedPaymentMethod,
+  'payment_status': 'Ödendi',
+  'status': 'Aktif',
+  'note': noteController.text,
+});
     addLog('Yeni rezervasyon oluşturuldu');
 
    showDialog(
