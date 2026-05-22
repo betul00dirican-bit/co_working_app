@@ -889,6 +889,7 @@ class _ReservationPageState extends State<ReservationPage> {
  final nameController = TextEditingController(text: currentCustomer['name']);
 final phoneController = TextEditingController(text: currentCustomer['phone']);
   final dateController = TextEditingController();
+  final noteController = TextEditingController();
 
 String selectedStartTime = '09:00';
 String selectedEndTime = '10:00';
@@ -899,6 +900,7 @@ String selectedPaymentMethod = 'Kart';
     nameController.dispose();
     phoneController.dispose();
     dateController.dispose();
+    noteController.dispose();
    
     super.dispose();
   }
@@ -974,6 +976,7 @@ if (hasConflict) {
       'date': dateController.text,
       'start': selectedStartTime,
 'end': selectedEndTime,
+'note': noteController.text.isEmpty ? 'Not yok' : noteController.text,
       'status': 'Aktif',
       'paymentStatus': 'Ödendi',
       'paymentMethod': selectedPaymentMethod,
@@ -1087,6 +1090,22 @@ DropdownButtonFormField<String>(
   },
 ),
 const SizedBox(height: 12),
+TextField(
+  controller: noteController,
+  maxLines: 3,
+  minLines: 2,
+  decoration: const InputDecoration(
+    labelText: 'Rezervasyon Notu',
+    hintText: 'Örn: Sessiz alan tercihi',
+    border: OutlineInputBorder(),
+    alignLabelWithHint: true,
+    contentPadding: EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 16,
+    ),
+  ),
+),
+const SizedBox(height: 20),
 DropdownButtonFormField<String>(
   value: selectedPaymentMethod,
   decoration: const InputDecoration(
