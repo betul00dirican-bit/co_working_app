@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 void main() {
   runApp(const CoworkingApp());
 }
+bool isDarkMode = false;
 
-class CoworkingApp extends StatelessWidget {
+class CoworkingApp extends StatefulWidget {
   const CoworkingApp({super.key});
+
+  @override
+  State<CoworkingApp> createState() => _CoworkingAppState();
+}
+
+class _CoworkingAppState extends State<CoworkingApp> {
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +20,17 @@ class CoworkingApp extends StatelessWidget {
       title: 'Co-Working Rezervasyon',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.indigo,
-        useMaterial3: false,
-      ),
-      home: const LoginPage(),
+  primarySwatch: Colors.indigo,
+  brightness: isDarkMode ? Brightness.dark : Brightness.light,
+  useMaterial3: false,
+),
+home: LoginPage(
+  onThemeChanged: () {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+  },
+),
     );
   }
 }
@@ -64,7 +78,12 @@ final List<Map<String, String>> workspaces = [
 ];
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final VoidCallback onThemeChanged;
+
+  const LoginPage({
+    super.key,
+    required this.onThemeChanged,
+  });
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -94,9 +113,18 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.indigo.shade50,
-      body: Center(
+   return Scaffold(
+  backgroundColor: isDarkMode ? Colors.grey.shade900 : Colors.indigo.shade50,
+  appBar: AppBar(
+    title: const Text('Giriş'),
+    actions: [
+      IconButton(
+        icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+        onPressed: widget.onThemeChanged,
+      ),
+    ],
+  ),
+  body: Center(
         child: Card(
           margin: const EdgeInsets.all(24),
           child: Padding(
