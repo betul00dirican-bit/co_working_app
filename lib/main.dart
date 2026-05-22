@@ -976,11 +976,25 @@ final hasConflict = reservations.any((reservation) {
 });
 
 if (hasConflict) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Bu alan seçilen tarih ve saatte zaten rezerve edilmiş'),
-    ),
-  );
+  showDialog(
+  context: context,
+  builder: (context) {
+    return AlertDialog(
+      title: const Text('Rezervasyon Çakışması'),
+      content: const Text(
+        'Bu alan seçilen tarih ve saat aralığında zaten rezerve edilmiş.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Tamam'),
+        ),
+      ],
+    );
+  },
+);
   return;
 }
 
@@ -1001,14 +1015,34 @@ if (hasConflict) {
 'totalPrice': widget.workspace['price']!,
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Rezervasyon başarıyla oluşturuldu')),
+   showDialog(
+  context: context,
+  builder: (context) {
+    return AlertDialog(
+      title: const Text('Rezervasyon Oluşturuldu'),
+      content: Text(
+        'Alan: ${widget.workspace['name']}\n'
+        'Tarih: ${dateController.text}\n'
+        'Saat: $selectedStartTime - $selectedEndTime\n'
+        'Ödeme: $selectedPaymentMethod',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ReservationListPage(),
+              ),
+            );
+          },
+          child: const Text('Tamam'),
+        ),
+      ],
     );
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const ReservationListPage()),
-    );
+  },
+);
   }
 
   @override
