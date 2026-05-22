@@ -48,6 +48,14 @@ home: LoginPage(
 List<Map<String, String>> reservations = [];
 List<Map<String, String>> favoriteWorkspaces = [];
 final supabase = Supabase.instance.client;
+Future<void> addLog(String action) async {
+  final userEmail = supabase.auth.currentUser?.email;
+
+  await supabase.from('logs').insert({
+    'action': action,
+    'user_email': userEmail,
+  });
+}
 Map<String, String> currentCustomer = {
   'name': '',
   'phone': '',
@@ -122,8 +130,10 @@ final passwordController = TextEditingController();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Giriş başarılı'),
+          
         ),
       );
+      await addLog('Kullanıcı giriş yaptı');
       if (selectedRole == 'Admin') {
   Navigator.push(
     context,
@@ -169,6 +179,7 @@ Future<void> register() async {
         'full_name': emailController.text.trim(),
         'role': selectedRole,
       });
+      await addLog('Yeni kullanıcı kaydı oluşturuldu');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -527,6 +538,7 @@ class _AddWorkspacePageState extends State<AddWorkspacePage> {
       'owner': ownerController.text,
       'status': 'Aktif',
     });
+    addLog('Yeni çalışma alanı eklendi');
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Çalışma alanı başarıyla eklendi')),
@@ -1107,6 +1119,7 @@ if (hasConflict) {
       'paymentMethod': selectedPaymentMethod,
 'totalPrice': widget.workspace['price']!,
     });
+    addLog('Yeni rezervasyon oluşturuldu');
 
    showDialog(
   context: context,
@@ -1632,6 +1645,7 @@ class WorkspaceDetailPage extends StatelessWidget {
 
     if (!alreadyFavorite) {
       favoriteWorkspaces.add(workspace);
+      addLog('Çalışma alanı favorilere eklendi');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1671,6 +1685,7 @@ ElevatedButton.icon(
   ),
   onPressed: () {
     workspaces.remove(workspace);
+    addLog('Çalışma alanı silindi');
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
