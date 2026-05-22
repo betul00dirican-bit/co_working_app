@@ -1461,6 +1461,25 @@ class WorkspaceDetailPage extends StatelessWidget {
   label: const Text('Alanı Düzenle'),
 ),
 const SizedBox(height: 12),
+ElevatedButton.icon(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.red,
+  ),
+  onPressed: () {
+    workspaces.remove(workspace);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Çalışma alanı silindi'),
+      ),
+    );
+
+    Navigator.pop(context);
+  },
+  icon: const Icon(Icons.delete),
+  label: const Text('Alanı Sil'),
+),
+const SizedBox(height: 12),
           if (showReserveButton)
             ElevatedButton.icon(
               onPressed: workspace['status'] == 'Aktif'
