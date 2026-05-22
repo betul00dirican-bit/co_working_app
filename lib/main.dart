@@ -147,6 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                       label: const Text('Giriş Yap'),
                     ),
                   ),
+                
                 ],
               ),
             ),
@@ -337,7 +338,7 @@ class OwnerPage extends StatelessWidget {
   onPressed: () {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const OwnerReservationPage()),
+      MaterialPageRoute(builder: (_) => OwnerReservationPage()),
     );
   },
 ),
@@ -1211,8 +1212,14 @@ class OwnerListPage extends StatelessWidget {
     );
   }
 }
-class CustomerHistoryPage extends StatelessWidget {
+class CustomerHistoryPage extends StatefulWidget {
   const CustomerHistoryPage({super.key});
+
+  @override
+  State<CustomerHistoryPage> createState() => _CustomerHistoryPageState();
+}
+
+class _CustomerHistoryPageState extends State<CustomerHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
@@ -1247,6 +1254,23 @@ class CustomerHistoryPage extends StatelessWidget {
                       'Ödeme Yöntemi: ${reservation['paymentMethod']}\n'
                       'Ücret: ${reservation['totalPrice']}',
                     ),
+                    trailing: reservation['status'] == 'Aktif'
+    ? IconButton(
+        icon: const Icon(Icons.cancel, color: Colors.red),
+        onPressed: () {
+          setState(() {
+            reservation['status'] = 'İptal Edildi';
+            reservation['paymentStatus'] = 'İade Edilecek';
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Rezervasyon iptal edildi'),
+            ),
+          );
+        },
+      )
+    : null,
                   ),
                 );
               },
@@ -1254,12 +1278,14 @@ class CustomerHistoryPage extends StatelessWidget {
     );
   }
 }
-class OwnerReservationPage extends StatelessWidget {
-  const OwnerReservationPage({super.key});
 
+class OwnerReservationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ownerNames = workspaces.map((w) => w['owner']!).toSet().toList();
+    final ownerNames = workspaces
+        .map((w) => w['owner']!)
+        .toSet()
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -1275,7 +1301,8 @@ class OwnerReservationPage extends StatelessWidget {
               itemBuilder: (context, ownerIndex) {
                 final ownerName = ownerNames[ownerIndex];
 
-                final ownerReservations = reservations.where((reservation) {
+                final ownerReservations =
+                    reservations.where((reservation) {
                   return reservation['owner'] == ownerName;
                 }).toList();
 
@@ -1290,21 +1317,23 @@ class OwnerReservationPage extends StatelessWidget {
                     children: ownerReservations.isEmpty
                         ? [
                             const ListTile(
-                              title: Text('Bu işletmeye ait rezervasyon yok'),
-                            )
+                              title: Text(
+                                'Bu işletmeye ait rezervasyon yok',
+                              ),
+                            ),
                           ]
                         : ownerReservations.map((reservation) {
                             return ListTile(
                               leading: const Icon(Icons.event),
-                              title: Text(reservation['workspaceName']!),
+                              title: Text(
+                                reservation['workspaceName']!,
+                              ),
                               subtitle: Text(
                                 'Müşteri: ${reservation['customerName']}\n'
                                 'Telefon: ${reservation['phone']}\n'
                                 'Tarih: ${reservation['date']}\n'
                                 'Saat: ${reservation['start']} - ${reservation['end']}\n'
-                                'Durum: ${reservation['status']}\n'
-                                'Ödeme: ${reservation['paymentStatus']}\n'
-                                'Ücret: ${reservation['totalPrice']}',
+                                'Durum: ${reservation['status']}',
                               ),
                             );
                           }).toList(),
