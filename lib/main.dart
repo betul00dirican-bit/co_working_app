@@ -519,7 +519,9 @@ class _AddWorkspacePageState extends State<AddWorkspacePage> {
     super.dispose();
   }
 
-  void addWorkspace() {
+  Future<void> addWorkspace() async {
+    print('WORKSPACE EKLEME ÇALIŞTI');
+
     if (nameController.text.isEmpty ||
         priceController.text.isEmpty ||
         capacityController.text.isEmpty ||
@@ -538,6 +540,15 @@ class _AddWorkspacePageState extends State<AddWorkspacePage> {
       'owner': ownerController.text,
       'status': 'Aktif',
     });
+    await supabase.from('workspaces').insert({
+  'name': nameController.text,
+  'type': selectedType,
+  'capacity': int.tryParse(capacityController.text) ?? 0,
+  'price': int.tryParse(priceController.text) ?? 0,
+  'owner_name': ownerController.text,
+  'status': 'Aktif',
+});
+print('SUPABASE WORKSPACE KAYDI BAŞARILI');
     addLog('Yeni çalışma alanı eklendi');
 
     ScaffoldMessenger.of(context).showSnackBar(
