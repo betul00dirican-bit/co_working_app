@@ -107,9 +107,11 @@ class _LoginPageState extends State<LoginPage> {
 final passwordController = TextEditingController();
   String selectedRole = 'Müşteri';
 
-  void login() {
+  
+    
    
     Future<void> login() async {
+      print('LOGIN BUTONUNA BASILDI');
   try {
     final response = await supabase.auth.signInWithPassword(
       email: emailController.text.trim(),
@@ -122,6 +124,28 @@ final passwordController = TextEditingController();
           content: Text('Giriş başarılı'),
         ),
       );
+      if (selectedRole == 'Admin') {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AdminPage(),
+    ),
+  );
+} else if (selectedRole == 'Müşteri') {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const CustomerPage(),
+    ),
+  );
+} else {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const OwnerPage(),
+    ),
+  );
+}
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -131,7 +155,7 @@ final passwordController = TextEditingController();
     );
   }
 }
-  }
+  
 Future<void> register() async {
   try {
     final response = await supabase.auth.signUp(
