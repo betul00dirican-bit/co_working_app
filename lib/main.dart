@@ -1448,6 +1448,19 @@ class WorkspaceDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          ElevatedButton.icon(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditWorkspacePage(workspace: workspace),
+      ),
+    );
+  },
+  icon: const Icon(Icons.edit),
+  label: const Text('Alanı Düzenle'),
+),
+const SizedBox(height: 12),
           if (showReserveButton)
             ElevatedButton.icon(
               onPressed: workspace['status'] == 'Aktif'
@@ -1464,6 +1477,158 @@ class WorkspaceDetailPage extends StatelessWidget {
               icon: const Icon(Icons.calendar_month),
               label: const Text('Bu Alanı Rezerve Et'),
             ),
+        ],
+      ),
+    );
+  }
+}
+class EditWorkspacePage extends StatefulWidget {
+  final Map<String, String> workspace;
+
+  const EditWorkspacePage({
+    super.key,
+    required this.workspace,
+  });
+
+  @override
+  State<EditWorkspacePage> createState() => _EditWorkspacePageState();
+}
+
+class _EditWorkspacePageState extends State<EditWorkspacePage> {
+  late TextEditingController nameController;
+  late TextEditingController priceController;
+  late TextEditingController capacityController;
+  late TextEditingController ownerController;
+
+  late String selectedStatus;
+
+  @override
+  void initState() {
+    super.initState();
+
+    nameController = TextEditingController(
+      text: widget.workspace['name'],
+    );
+
+    priceController = TextEditingController(
+      text: widget.workspace['price']!
+          .replaceAll(' TL / saat', ''),
+    );
+
+    capacityController = TextEditingController(
+      text: widget.workspace['capacity']!
+          .replaceAll(' kişi', ''),
+    );
+
+    ownerController = TextEditingController(
+      text: widget.workspace['owner'],
+    );
+
+    selectedStatus = widget.workspace['status']!;
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    priceController.dispose();
+    capacityController.dispose();
+    ownerController.dispose();
+    super.dispose();
+  }
+
+  void saveChanges() {
+    widget.workspace['name'] = nameController.text;
+
+    widget.workspace['price'] =
+        '${priceController.text} TL / saat';
+
+    widget.workspace['capacity'] =
+        '${capacityController.text} kişi';
+
+    widget.workspace['owner'] = ownerController.text;
+
+    widget.workspace['status'] = selectedStatus;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Alan bilgileri güncellendi'),
+      ),
+    );
+
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Alan Düzenle'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              labelText: 'Alan Adı',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: priceController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Saatlik Ücret',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: capacityController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Kapasite',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ownerController,
+            decoration: const InputDecoration(
+              labelText: 'Kiralayan',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: selectedStatus,
+            decoration: const InputDecoration(
+              labelText: 'Durum',
+              border: OutlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: 'Aktif',
+                child: Text('Aktif'),
+              ),
+              DropdownMenuItem(
+                value: 'Pasif',
+                child: Text('Pasif'),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() {
+                selectedStatus = value!;
+              });
+            },
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: saveChanges,
+            icon: const Icon(Icons.save),
+            label: const Text('Değişiklikleri Kaydet'),
+          ),
         ],
       ),
     );
