@@ -34,19 +34,13 @@ class _CoworkingAppState extends State<CoworkingApp> {
   brightness: isDarkMode ? Brightness.dark : Brightness.light,
   useMaterial3: false,
 ),
-home: supabase.auth.currentUser == null
-    ? LoginPage(
-        onThemeChanged: () {
-          setState(() {
-            isDarkMode = !isDarkMode;
-          });
-        },
-      )
-    : currentRole == 'Admin'
-    ? const AdminPage()
-    : currentRole == 'Kiralayan'
-        ? const OwnerPage()
-        : const CustomerPage(),
+home: AuthGate(
+  onThemeChanged: () {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+  },
+),
     );
   }
 }
@@ -2106,5 +2100,78 @@ class StatisticsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+class AuthGate extends StatefulWidget {
+  final VoidCallback onThemeChanged;
+
+  const AuthGate({
+    super.key,
+    required this.onThemeChanged,
+  });
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool isLoading = true;
+  String role = '';
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserRole();
+  }
+
+  Future<void> loadUserRole() async {
+    final userEmail = supabase.auth.currentUser?.email;
+
+    if (userEmail == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    final data = await supabase
+        .from('users')
+        .select('role')
+        .eq('email', userEmail)
+        .maybeSingle();
+        print('LOGIN EMAIL: $userEmail');
+print('USER ROLE DATA: $data');
+
+    setState(() {
+
+      role = data?['role'] ?? 'Müşteri';
+      currentRole = role;
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (supabase.auth.currentUser == null) {
+      return LoginPage(
+        onThemeChanged: widget.onThemeChanged,
+      );
+    }
+
+    if (role == 'Admin') {
+      return const AdminPage();
+    } else if (role == 'Kiralayan') {
+      return const OwnerPage();
+    } else {
+      return const CustomerPage();
+    }
   }
 }
